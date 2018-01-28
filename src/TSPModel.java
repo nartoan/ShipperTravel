@@ -1,9 +1,3 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
 public class TSPModel {
 	int[] X;
 	boolean[] marked;
@@ -12,24 +6,23 @@ public class TSPModel {
 	int[] best_X;
 	double[][] c;
 	int length;
-	private Scanner scanner;
 	
-	public void tryValue(int k, boolean[] marked) {
-		for(int i = 0; i < length; i++) {
- 			if (check(marked)) {
+	public void tryValue(int k) {
+		for(int i = 1; i < length; i++) {
+ 			if (checkSolution()) {
  				updateBest();
-			} else if (marked[i] == false && i != k) {
+			} else if (marked[i] == false && i != k ) {
 				marked[i] = true;
-				X[k] = i;
+				X[k + 1] = i;
 				
-				tryValue(i,marked);
+				tryValue(k + 1);
 				
-				X[k] = -1;
+				X[k + 1] = -1;
 				marked[i] = false;
 			}
 		}
 	}
-	public boolean check(boolean[] marked) {
+	public boolean checkSolution() {
 		for(boolean marke : marked) {
 			if (!marke) {
 				return false;
@@ -39,18 +32,14 @@ public class TSPModel {
 		return true;
 	}
 	
-	public void updateBest() {
-		for(int temp : X) {
-			System.out.print(temp + " ");
-		}
-		System.out.println();
-		 f = calcDistance(X);
+	private void updateBest() {
+		 f = calcDistance();
 		 if (best_f > f) {
-			 best_X = X;
+			 System.arraycopy(X, 0, best_X, 0, length);
 			 best_f = f;
 		 }
 	}
-	private double calcDistance(int[] X) {
+	private double calcDistance() {
 		double distance = c[0][X[0]];
 		int previous = 0;
 		for(int temp : X) {
@@ -59,11 +48,13 @@ public class TSPModel {
 				previous = temp;
 			}
 		}
+		distance += c[previous][0];
 		
 		return distance;
 	}
 	
 	public void printSolution() {
+		System.out.print("Travel : ");
 		for(int temp : best_X) {
 			System.out.print(temp + " ");
 		}
@@ -71,13 +62,22 @@ public class TSPModel {
 		System.out.println("Distance : " + best_f);
 	}
 	
-	public void setInput() throws FileNotFoundException {
-		scanner = new Scanner(new File("matrix.txt"));
-		length = scanner.nextInt();
+	public String solution() {
+		String solution = "Travel : \n";
+		for(int temp : best_X) {
+			solution += temp + " ";
+		}
+		solution += "\nDistance : " + best_f;
+
+		return solution;
+	}
+	
+	public void setInput(double[][] cInput) {
+		length = cInput[0].length;
 		c = new double[length][length];
 		for(int i = 0 ; i < length; i++) {
 			for(int j  = 0; j < length; j++) {
-				c[i][j] = scanner.nextDouble();
+				c[i][j] = cInput[i][j];
 			}
 		}
 		
@@ -94,15 +94,7 @@ public class TSPModel {
 		best_X = new int[length];
 		
 		best_f = Double.MAX_VALUE;
-	
 		
-		tryValue(0, marked);
-		printSolution();
-	}
-	public static void main(String[] args) throws FileNotFoundException {
-		TSPModel tspModel = new TSPModel();
-		tspModel.setInput();
-		
-		System.out.println();
+		X[0] = 0;
 	}
 }
